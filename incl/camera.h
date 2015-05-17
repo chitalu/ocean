@@ -1,90 +1,86 @@
 #ifndef __camera_H__
 #define __camera_H__
 
-#include "entity.h"
-#include "common.h"
+#include "base.h"
 
-struct camera : public Entity 
+struct camera_t
 {
 private:
-  glm::mat4 proj, matrix;
-  glm::vec3 pos;
-  glm::vec3 dir;
-  glm::vec3 right;
-  glm::vec3 target; // look at, as well as pivot around
-  // horizontal angle : toward -Z
-  float m_horizontal_angle;
-  // vertical angle : 0, look at the horizon
-  float m_vertical_angle;
+	glm::mat4 proj, matrix;
 
-  float move_speed; // 3 units / second
-  float mouse_speed;
+	glm::vec3	pos,dir,right,
+				// the look-at, as well as pivot-around position
+				target; 
+
+	float	horizontal_ang, // horizontal angle : toward -Z
+			// vertical angle : 0, look at the horizon
+			vertical_ang,
+			speed,
+			mouse_speed;
   
-  enum INPUT
-  {
-    FORWARD=0,
-    BACK,
-    LEFT,
-    RIGHT,
-    SHOWREEL,
-    ROTATE
-  };
+	enum INPUT
+	{
+		FORWARD=0,
+		BACK,
+		LEFT,
+		RIGHT,
+		SHOWREEL,
+		ROTATE,
+		TOTAL
+	};
 
-  bool user[8];
+	bool user[INPUT::TOTAL];
 
-  bool m_showreel, m_move_forward, m_move_back, m_move_left, m_move_right,
-      m_moved_back_or_forth, // forward or backward...
-      m_strafed, rotating;   // left or right ...
+	bool showreel,
+		moving_back_or_forth, // forward or backward...
+		strafing, rotating;   // left or right ...
 
-  // makes camera rotate around model
-  void pivot(void);
-
-  // user moves around freely
-  void free_roam(void);
-
-  void move(void);
+	void calc_velocity(float dt);
 
 public:
 
-  camera(glm::vec3 pos, float fov, float aspect,
-         float near_plane, float far_plane);
+	camera_t(glm::vec3 pos, float fov, float aspect,
+			float near_plane, float far_plane);
 
-  ~camera(void);
+	~camera_t(void);
 
-  void setup(void);
+	bool setup(void);
 
-  void apply(float dt);
+	void teardown(void);
 
-  // return projection matrix
-  inline const glm::mat4 &get_proj(void) const 
-  {
-    return proj;
-  }
+	void apply(float dt);
 
-  inline virtual const glm::mat4 &get_matrix(void) const 
-  { 
-    return matrix; 
-  }
+	// return projection matrix
+	inline const glm::mat4 &get_proj(void) const 
+	{
+		return proj;
+	}
 
-  // where I'm I looking?
-  inline void set_target(glm::vec3 const &t) 
-  { 
-    target = t; 
-  }
+	inline virtual const glm::mat4 &get_matrix(void) const 
+	{ 
+		return matrix; 
+	}
 
-  const glm::vec3 &get_pos(void) const 
-  {
-    return this->pos; 
-  }
+	// where I'm I looking?
+	inline void set_target(glm::vec3 const &t) 
+	{ 
+		target = t; 
+	}
+
+	const glm::vec3 &get_pos(void) const 
+	{
+		return this->pos; 
+	}
   
-  void rotate(float angle, glm::vec3 axes) 
-  {
-    m_matrix = glm::translate(glm::mat4(1.0), position);
-    m_matrix *= glm::rotate(m_matrix, glm::radians(angle), axes);
-  }
+	void rotate(float angle, glm::vec3 const &axes)
+	{
+		matrix = glm::translate(glm::mat4(1.0), this->pos);
+		matrix *= glm::rotate(matrix, glm::radians(angle), axes);
+	}
 
-  void process_input( GLFWwindow* window, int key, int scancode, 
-                      int action, int mods);
+	void process_input( int key, int scancode, int action, int mods);
 };
+
+extern camera_t* camera;
 
 #endif

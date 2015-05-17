@@ -1,17 +1,16 @@
-#include "obj.h"
-
-#include "base.h"
-
+#include "ocean.h"
 #include "camera.h"
 
-#define vATTRIB_POS (0)
+#include <cassert>
 
 struct 
 {
-	GLint 	vao, // vertex array object 
+	GLuint 	vao, // vertex array object 
 			vbo, // vertex buffer object
 			ibo, // index buffer object
-			icount, // number of indices 
+			vpos_attrib_loc;
+
+	GLint	icount, // number of indices 
 			length, // length along x 
 			breadth; // length along z
 }obj;
@@ -33,11 +32,19 @@ bool ocean_t::setup(void)
 		glBindBuffer(GL_ARRAY_BUFFER, obj.vbo);
 		{
 			// allocate buffer memory
-			glBufferData();
-			// specify buffer data interpretation upon rendering
-			glVertexAttribPointer();
+			glBufferData(	GL_ARRAY_BUFFER, 
+							sizeof(GLuint) * (obj.length * obj.breadth), 
+							NULL, 
+							GL_DYNAMIC_DRAW);
 
-			glm::vec3* gpu_vptr = (glm::vec3*)glMapBuffer();
+			// set up vertex arrays
+			obj.vpos_attrib_loc = glGetAttribLocation(shader_program, "a_pos");
+
+			// specify buffer data interpretation upon rendering
+			glVertexAttribPointer(obj.vpos_attrib_loc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+			glm::vec3* gpu_vptr = (glm::vec3*)glMapBuffer(	GL_ARRAY_BUFFER, 
+															GL_WRITE_ONLY);
 			assert(gpu_vptr != NULL && "failed to map vertex buffer");
 
 			const float hlength = obj.length / 2.0f;
@@ -54,7 +61,7 @@ bool ocean_t::setup(void)
 				}
 			}
 
-			GLboolean result = glUnMapBuffer();
+			GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
 			assert(result == GL_TRUE && "failed to unmap vertex buffer");
 			gpu_vptr = NULL;
 		}
@@ -64,15 +71,19 @@ bool ocean_t::setup(void)
 		glGenBuffers(1, &obj.ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.ibo);
 		{
-			glBufferData();
-
-			GLuint* gpu_iptr = (GLuint*)glMapBuffer();
-			assert(gpu_iptr != NULL && "failed to map index buffer");
-
 			int cnt = 0, tris_per_sqr = 2, indices_per_sqr = 4;
 			// number of indices is equal to:
-			obj.icount = 	((obj.length - 1) * (obj.breadth - 1)) *
-                           	tris_per_sqr * indices_per_sqr;
+			obj.icount =	((obj.length - 1) * (obj.breadth - 1)) *
+							tris_per_sqr * indices_per_sqr;
+
+			glBufferData(	GL_ELEMENT_ARRAY_BUFFER, 
+							sizeof(GLuint) * obj.icount, 
+							NULL, 
+							GL_STATIC_DRAW);
+
+			GLuint* gpu_iptr = (GLuint*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, 
+													GL_WRITE_ONLY);
+			assert(gpu_iptr != NULL && "failed to map index buffer");
 
 			// define the index data ...
 			for (int x = 0; x < (obj.length - 1); x++) 
@@ -91,16 +102,18 @@ bool ocean_t::setup(void)
 				}
 			}
 
-			GLboolean result = glUnMapBuffer();
+			GLboolean result = glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 			assert(result == GL_TRUE && "failed to unmap index buffer");
 			gpu_iptr = NULL;
 		}
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	glBindVertexArray(0);
+
+	return true;
 }
 
-bool ocean_t::teardown(void)
+void ocean_t::teardown(void)
 {
 	glDeleteBuffers(1, &obj.vbo);
 	glDeleteBuffers(1, &obj.ibo);
@@ -108,8 +121,7 @@ bool ocean_t::teardown(void)
 	glDeleteVertexArrays(1, &obj.vao);
 }
 
-void ocean_t::process_input(	GLFWwindow* window, int key, int scancode, 
-								int action, int mods)
+void ocean_t::process_input(int key, int scancode, int action, int mods)
 {
 
 }
@@ -121,11 +133,11 @@ void ocean_t::update(float dt)
 
 void ocean_t::render(void)
 {
-	glBindVertexArray(vertex.array);
-	glEnableVertexAttribPointer(vATTRIB_POS);
+	glBindVertexArray(obj.vao);
+	glEnableVertexAttribArray(obj.vpos_attrib_loc);
 
-	glDrawElements(GL_LINES_LOOP, GL_UNSIGNED_INT, obj.icount);
+	glDrawElements(GL_LINE_LOOP, obj.icount, GL_UNSIGNED_INT, (void*)0);
 
-	glDisableVertexAttribPointer(vATTRIB_POS);
+	glDisableVertexAttribArray(obj.vpos_attrib_loc);
 	glBindVertexArray(0);
 }

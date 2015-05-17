@@ -5,10 +5,9 @@ struct ocean_t
 {
 	bool setup(void);
 
-	bool teardown(void);
+	void teardown(void);
 
-	void process_input(	GLFWwindow* window, int key, int scancode, 
-						int action, int mods);
+	void process_input(int key, int scancode, int action, int mods);
 
 	void update(float dt);
 
