@@ -21,7 +21,7 @@ bool ocean_t::setup(void)
 	obj.breadth = 256;
 
 	// must be even
-	assert((obj.length & obj.breadth) & 2);
+	assert((!(obj.length % 2) && !(obj.breadth % 2)) && "grid dimensions not even");
 
 	// define vertex array object
 	glGenVertexArrays(1, &obj.vao);
@@ -33,15 +33,17 @@ bool ocean_t::setup(void)
 		{
 			// allocate buffer memory
 			glBufferData(	GL_ARRAY_BUFFER, 
-							sizeof(GLuint) * (obj.length * obj.breadth), 
+							sizeof(glm::vec3) * (obj.length * obj.breadth),
 							NULL, 
 							GL_DYNAMIC_DRAW);
+			glchk_;
 
 			// set up vertex arrays
 			obj.vpos_attrib_loc = glGetAttribLocation(shader_program, "a_pos");
 
 			// specify buffer data interpretation upon rendering
 			glVertexAttribPointer(obj.vpos_attrib_loc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+			glchk_;
 
 			glm::vec3* gpu_vptr = (glm::vec3*)glMapBuffer(	GL_ARRAY_BUFFER, 
 															GL_WRITE_ONLY);
@@ -65,7 +67,6 @@ bool ocean_t::setup(void)
 			assert(result == GL_TRUE && "failed to unmap vertex buffer");
 			gpu_vptr = NULL;
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		// define vertex buffer object for vertex indices
 		glGenBuffers(1, &obj.ibo);
@@ -80,6 +81,7 @@ bool ocean_t::setup(void)
 							sizeof(GLuint) * obj.icount, 
 							NULL, 
 							GL_STATIC_DRAW);
+			glchk_;
 
 			GLuint* gpu_iptr = (GLuint*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, 
 													GL_WRITE_ONLY);
@@ -98,7 +100,7 @@ bool ocean_t::setup(void)
 					gpu_iptr[cnt + 4] = (x + (z * obj.length) + obj.length + 1);
 					gpu_iptr[cnt + 5] = ((x + 1) + (z * obj.length));
 
-					++cnt;
+					cnt += 6;
 				}
 			}
 
@@ -106,9 +108,9 @@ bool ocean_t::setup(void)
 			assert(result == GL_TRUE && "failed to unmap index buffer");
 			gpu_iptr = NULL;
 		}
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		
 	}
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 
 	return true;
 }
@@ -137,6 +139,7 @@ void ocean_t::render(void)
 	glEnableVertexAttribArray(obj.vpos_attrib_loc);
 
 	glDrawElements(GL_LINE_LOOP, obj.icount, GL_UNSIGNED_INT, (void*)0);
+	glchk_;
 
 	glDisableVertexAttribArray(obj.vpos_attrib_loc);
 	glBindVertexArray(0);

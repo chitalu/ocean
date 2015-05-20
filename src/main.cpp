@@ -13,8 +13,32 @@ bool executing = false;
 ocean_t *ocean = NULL;
 camera_t* camera = NULL;
 
-const char* vsrc = "";
-const char* fsrc = "";
+const char* vsrc = ""
+"#version 150											\n"
+"														\n"
+"uniform mat4 mvp;										\n"
+"uniform mat3 normal_matrix;							\n"
+"uniform vec3 view_pos;									\n"
+"														\n"
+"in vec3 a_pos;											\n"
+"														\n"
+"void main(void)										\n"
+"{														\n"
+"	gl_Position = (mvp * vec4(a_pos, 1.0f));			\n"
+"}														\n";
+
+// fragment shader
+const char* fsrc = ""
+"#version 150											\n"
+"														\n"
+"uniform vec2 resolution;								\n"
+"														\n"
+"out vec4 color;										\n"
+"														\n"
+"void main(void)										\n"
+"{														\n"
+"	color = vec4(0.0f, 1.0f, 1.0f, 1.0f);				\n"
+"}														\n";
 
 GLuint shader_program;
 
@@ -34,7 +58,8 @@ static GLuint create_shader(GLenum type, const char* text)
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &shader_ok);
 		if (shader_ok != GL_TRUE)
 		{
-			fprintf(stderr, "ERROR: Failed to compile %s shader\n", (type == GL_FRAGMENT_SHADER) ? "fragment" : "vertex");
+			fprintf(stderr, "ERROR: Failed to compile %s shader\n", 
+					(type == GL_FRAGMENT_SHADER) ? "fragment" : "vertex");
 			glGetShaderInfoLog(shader, 8192, &log_length, info_log);
 			fprintf(stderr, "ERROR: \n%s\n\n", info_log);
 			glDeleteShader(shader);
@@ -95,18 +120,29 @@ static GLuint create_shader_program(const char* vs_text, const char* fs_text)
 	return program;
 }
 
-
 bool init_simulation(void)
 {
 	glViewport(0, 0, window_width, window_height);
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
 
+ 	shader_program = create_shader_program(vsrc, fsrc);
+
+	glUseProgram(shader_program);
+	{
+		GLint l = glGetUniformLocation(shader_program, "resolution");
+		glUniform2f(l, (GLfloat)window_width, (GLfloat)window_height);
+	}
+	glUseProgram(0);  
+
 	ocean = new ocean_t;
 
-	camera = new camera_t(glm::vec3(0.0f), 60.0f, float(window_height / window_width), 0.1f, 1000.0f);
+	camera = new camera_t(	glm::vec3(0.0f, 0.0f, 0.0f), 
+							45.0f, 
+							float(window_height / window_width), 
+							1.0f, 
+							1000.0f);
 
 	if (!(executing = camera->setup()))
 	{
@@ -118,22 +154,13 @@ bool init_simulation(void)
 		return false;
 	}
 
-	shader_program = create_shader_program(vsrc, fsrc);
-
-	glUseProgram(shader_program);
-	{
-		GLint l = glGetUniformLocation(shader_program, "resolution");
-		glUniform2f(l, (GLfloat)window_width, (GLfloat)window_height);
-	}
-	glUseProgram(0);
-
-
 	return executing;
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-
+	cursor_posx = xpos;
+	cursor_posy = ypos;
 }
 
 // key/input event register callback
@@ -164,11 +191,34 @@ void run_simulation(void)
 	    // determine time difference in milliseconds
 	    time.delta = (time.current - time.previous)/1000.0;
 
+		// update camera orientation based on user input
+		camera->apply(static_cast<float>(time.delta));
+
 	    // update simulation
 	    ocean->update(static_cast<float>(time.delta));
 
+		// clear respective buffers first before rendering
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		glUseProgram(shader_program);
 		{
+			glm::mat4	view = camera->get_matrix(),
+						model = glm::mat4(1.0f),
+						proj = camera->get_proj(),
+						mvp;
+			 
+			mvp = proj * (view * model);
+
+			GLint loc = glGetUniformLocation(shader_program, "mvp");
+			glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+			glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
+			loc = glGetUniformLocation(shader_program, "normal_matrix");
+			glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+			loc = glGetUniformLocation(shader_program, "view_pos");
+ 			glUniform3fv(loc, 1, glm::value_ptr(camera->get_pos()));
+
 			// render simulation results
 			ocean->render();
 		}
@@ -199,7 +249,7 @@ void pfn_atexit(void)
 		camera->teardown();
 
 		delete camera;
-		ocean = NULL;
+		camera = NULL;
 	}
 
 	if(ocean != NULL)
@@ -260,6 +310,7 @@ int main(int argc, char const *argv[])
 
 	// make current OpenGL context
 	glfwMakeContextCurrent(window);
+	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
 	// how often we swap render buffers i.e. front and back buffers upon
 	// invoking a swap-buffers command
@@ -274,6 +325,11 @@ int main(int argc, char const *argv[])
 	// retrieves the size, in pixels, of the framebuffer of 
 	// the specified window.
 	glfwGetFramebufferSize(window, &window_width, &window_height);
+
+	// GLFW_CURSOR_DISABLED hides and grabs the cursor, providing virtual and 
+	// unlimited cursor movement. This is useful for implementing for example 
+	// 3D camera controls.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// initiliaze OpenGL buffers and shaders etc. necessary to both update
 	// and render the ocean waves

@@ -18,6 +18,8 @@
 #include <glm/mat4x4.hpp> 
 // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/matrix_transform.hpp> 
+// glm::value_ptr
+#include <glm/gtc/type_ptr.hpp>
 
 #include <cstdlib>
 #include <cstdio>
@@ -29,9 +31,11 @@
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
+#define glchk_ assert(glGetError() == GL_NO_ERROR);
+
 // window handle as returned by glfw
 extern GLFWwindow* window;
-extern int window_width;
+extern int window_height;
 extern int window_width;
 
 extern double cursor_posx;

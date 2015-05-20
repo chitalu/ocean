@@ -7,11 +7,12 @@ camera_t::camera_t(	glm::vec3 pos, float fov, float aspect,
 		pos(pos), 
 		dir(0.0f), 
 		right(0.0f),	
-		target(0.0f),
+		target(glm::vec3(0.0f, 0.0f, 0.0f)),
 		horizontal_ang((float)M_PI), 
 		vertical_ang(0.0f),
 		speed(0.0f), 
-		mouse_speed(0.9f) 
+		mouse_speed(1.0f),
+		showreel(false)
       { }
 
 camera_t::~camera_t(void) 
@@ -36,17 +37,15 @@ void camera_t::apply(float dt)
 {
 	if (showreel) // pivot around a particular position i.e. "target"
 	{
-		static float	radius = 1.2f, 
-						height = 0.8f,
+		static float	radius = 10.72f, 
+						height = 10.50f,
 						t = 0; 
 		
-		t += dt;
+		t += dt * 100;
 
-		height = 0.60f + (0.1f * sin((float)(M_PI * 2.0f) + t));
-
-		this->pos = glm::vec3(	radius * cos((float)(M_PI * 2.0f) + t),
+		this->pos = glm::vec3(	radius * cos(float(M_PI * 2.0f) + t),
 								height,
-								radius * sin((float)(M_PI * 2.0f) + t));
+								radius * sin(float(M_PI * 2.0f) + t));
 
 		this->matrix = glm::lookAt(	this->pos,
 									this->target,
@@ -56,7 +55,7 @@ void camera_t::apply(float dt)
 	{
 		calc_velocity(dt);
 		
-		glm::vec2 screen_center(window_width / 2.0f, window_width / 2.0f);
+		glm::vec2 screen_center(window_width / 2.0f, window_height / 2.0f);
 
 		horizontal_ang += mouse_speed * dt * float(screen_center.x - cursor_posx);
 		vertical_ang += mouse_speed * dt * float(screen_center.y - cursor_posy);
@@ -67,7 +66,7 @@ void camera_t::apply(float dt)
 								sin(vertical_ang),
 								cos(vertical_ang) * cos(horizontal_ang));
 
-		// right vector
+		// right vector 
 		this->right = glm::vec3(sin(horizontal_ang - ((float)(M_PI) / 2.0f)),
 								0,
 								cos(horizontal_ang - ((float)(M_PI) / 2.0f)));
@@ -93,8 +92,8 @@ void camera_t::calc_velocity(float dt)
 		user[INPUT::LEFT] ||
 		user[INPUT::RIGHT])
 	{
-		speed += dt * 0.2f;
-		glm::clamp(speed, 0.0f, 16.0f);
+		speed += dt * 10000.20f;
+		speed = glm::clamp(speed, 0.0f, 64.0f);
 	} 
 	else 
 	{
@@ -137,59 +136,55 @@ void camera_t::calc_velocity(float dt)
 
 void camera_t::process_input( int key, int scancode, int action, int mods) 
 {
-  /*if (input_handler.type == SDL_MOUSEMOTION) 
-  {
-    glm::ivec2 p;
-    SDL_GetMouseState(&p.x, &p.y);
-    m_mouse_pos = (glm::vec2)(p);
-  }
+	if (action == GLFW_PRESS) 
+	{
+		switch (key) 
+		{
+		case GLFW_KEY_W:
+			user[INPUT::FORWARD] = true;
+			break;
+		case GLFW_KEY_S:
+			user[INPUT::BACK] = true;
+			break;
+		case GLFW_KEY_D:
+			user[INPUT::RIGHT] = true;
+			break;
+		case GLFW_KEY_A:
+			user[INPUT::LEFT] = true;
+			break;
+		case GLFW_KEY_SPACE:
+			showreel = showreel ? false : true;
+			break;
+		}
+	}
+	else if (action == GLFW_RELEASE) 
+	{
+		switch (key) 
+		{
+		case GLFW_KEY_W:
+			user[INPUT::FORWARD] = false;
+			break;
+		case GLFW_KEY_S:
+			user[INPUT::BACK] = false;
+			break;
+		case GLFW_KEY_D:
+			user[INPUT::RIGHT] = false;
+			break;
+		case GLFW_KEY_A:
+			user[INPUT::LEFT] = false;
+			break;
+		}
 
-  if (input_handler.type == SDL_KEYDOWN) {
-    switch (input_handler.key.keysym.sym) {
-    case SDLK_w:
-      m_move_forward = true;
-      break;
-    case SDLK_s:
-      m_move_back = true;
-      break;
-    case SDLK_d:
-      m_move_right = true;
-      break;
-    case SDLK_a:
-      m_move_left = true;
-      break;
-    case SDLK_v:
-      showreel = showreel ? false : true;
-      break;
-    }
-
-  } else if (input_handler.type == SDL_KEYUP) {
-    switch (input_handler.key.keysym.sym) {
-    case SDLK_w:
-      m_move_forward = false;
-      break;
-    case SDLK_s:
-      m_move_back = false;
-      break;
-    case SDLK_d:
-      m_move_right = false;
-      break;
-    case SDLK_a:
-      m_move_left = false;
-      break;
-    }
-
-    switch (input_handler.key.keysym.sym) {
-    case SDLK_w:
-    case SDLK_s:
-      moving_back_or_forth = true;
-      strafing = false;
-      break;
-    case SDLK_d:
-    case SDLK_a:
-      strafing = true;
-      moving_back_or_forth = false;
-      break;
-    }
-  }*/
+		switch (key) 
+		{
+			case GLFW_KEY_W: case GLFW_KEY_S:
+				moving_back_or_forth = true;
+				strafing = false;
+			break;
+			case GLFW_KEY_D: case GLFW_KEY_A:
+				strafing = true;
+				moving_back_or_forth = false;
+			break;
+		}	
+	}
 }
