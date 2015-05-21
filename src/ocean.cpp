@@ -36,14 +36,12 @@ bool ocean_t::setup(void)
 							sizeof(glm::vec3) * (obj.length * obj.breadth),
 							NULL, 
 							GL_DYNAMIC_DRAW);
-			glchk_;
 
 			// set up vertex arrays
 			obj.vpos_attrib_loc = glGetAttribLocation(shader_program, "a_pos");
 
 			// specify buffer data interpretation upon rendering
 			glVertexAttribPointer(obj.vpos_attrib_loc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-			glchk_;
 
 			glm::vec3* gpu_vptr = (glm::vec3*)glMapBuffer(	GL_ARRAY_BUFFER, 
 															GL_WRITE_ONLY);
@@ -81,7 +79,6 @@ bool ocean_t::setup(void)
 							sizeof(GLuint) * obj.icount, 
 							NULL, 
 							GL_STATIC_DRAW);
-			glchk_;
 
 			GLuint* gpu_iptr = (GLuint*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, 
 													GL_WRITE_ONLY);
@@ -139,7 +136,6 @@ void ocean_t::render(void)
 	glEnableVertexAttribArray(obj.vpos_attrib_loc);
 
 	glDrawElements(GL_LINE_LOOP, obj.icount, GL_UNSIGNED_INT, (void*)0);
-	glchk_;
 
 	glDisableVertexAttribArray(obj.vpos_attrib_loc);
 	glBindVertexArray(0);

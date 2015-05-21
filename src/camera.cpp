@@ -67,9 +67,9 @@ void camera_t::apply(float dt)
 								cos(vertical_ang) * cos(horizontal_ang));
 
 		// right vector 
-		this->right = glm::vec3(sin(horizontal_ang - ((float)(M_PI) / 2.0f)),
+		this->right = glm::vec3(sin(horizontal_ang - (float(M_PI) / 2.0f)),
 								0,
-								cos(horizontal_ang - ((float)(M_PI) / 2.0f)));
+								cos(horizontal_ang - (float(M_PI) / 2.0f)));
 
 		// up vector : perpendicular to both direction and right
 		glm::vec3 up = glm::cross(this->right, this->dir);
@@ -93,7 +93,7 @@ void camera_t::calc_velocity(float dt)
 		user[INPUT::RIGHT])
 	{
 		speed += dt * 10000.20f;
-		speed = glm::clamp(speed, 0.0f, 64.0f);
+		speed = glm::clamp(speed, 0.0f, 128.0f);
 	} 
 	else 
 	{

@@ -13,8 +13,8 @@ endif()
 #--------------------------------------------------------------------
 # Add subdirectories
 #--------------------------------------------------------------------
-add_subdirectory(ext/glfw)
-add_subdirectory(ext/glm)
+add_subdirectory(glfw)
+add_subdirectory(glm)
 
 #--------------------------------------------------------------------
 #	dir variables
@@ -32,7 +32,7 @@ FILE(GLOB PROJECT_SRC_FILES "${src_dir}/*.cpp" )
 add_executable(	${CMAKE_PROJECT_NAME} 
 				${PROJECT_INCL_FILES} 
 				${PROJECT_SRC_FILES} 
-				"${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/deps/glad.c")
+				"${CMAKE_CURRENT_SOURCE_DIR}/glfw/deps/glad.c")
 
 #--------------------------------------------------------------------
 #	the GLFW_LIBRARIES cache variable contains all link-time 
@@ -43,4 +43,4 @@ TARGET_LINK_LIBRARIES(	${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 SET_TARGET_PROPERTIES(	${CMAKE_PROJECT_NAME} 
 						PROPERTIES 
 						INCLUDE_DIRECTORIES 
-							"${incl_dir};${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include;${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/deps;${CMAKE_CURRENT_SOURCE_DIR}/ext/glm")
+							"${incl_dir};${CMAKE_CURRENT_SOURCE_DIR}/glfw/include;${CMAKE_CURRENT_SOURCE_DIR}/glfw/deps;${CMAKE_CURRENT_SOURCE_DIR}/glm")

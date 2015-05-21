@@ -202,12 +202,12 @@ void run_simulation(void)
 
 		glUseProgram(shader_program);
 		{
-			glm::mat4	view = camera->get_matrix(),
-						model = glm::mat4(1.0f),
+			glm::mat4	model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0)), 
+						view = camera->get_matrix(),
 						proj = camera->get_proj(),
 						mvp;
-			 
-			mvp = proj * (view * model);
+			
+ 			mvp = proj * view * model;
 
 			GLint loc = glGetUniformLocation(shader_program, "mvp");
 			glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mvp));
