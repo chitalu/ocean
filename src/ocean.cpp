@@ -17,8 +17,8 @@ struct
 
 bool ocean_t::setup(void)
 {
-	obj.length = 256;
-	obj.breadth = 256;
+	obj.length = 16;
+	obj.breadth = 16;
 
 	// must be even
 	assert((!(obj.length % 2) && !(obj.breadth % 2)) && "grid dimensions not even");
@@ -107,7 +107,7 @@ bool ocean_t::setup(void)
 		}
 		
 	}
-	//glBindVertexArray(0);
+	glBindVertexArray(0);
 
 	return true;
 }
@@ -127,7 +127,19 @@ void ocean_t::process_input(int key, int scancode, int action, int mods)
 
 void ocean_t::update(float dt)
 {
+	glBindBuffer(GL_ARRAY_BUFFER, obj.vbo);
+	{
+		glm::vec3* ptr = (glm::vec3*)glMapBuffer(	GL_ARRAY_BUFFER,
+														GL_WRITE_ONLY);
+		assert(ptr != NULL && "failed to map vertex buffer");
 
+		// update ocean vertices...
+
+		GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
+		assert(result == GL_TRUE && "failed to unmap vertex buffer");
+		ptr = NULL;
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ocean_t::render(void)

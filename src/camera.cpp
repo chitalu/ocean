@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <list>
 
 camera_t::camera_t(	glm::vec3 pos, float fov, float aspect,
 					float z_near, float z_far)
@@ -11,7 +12,7 @@ camera_t::camera_t(	glm::vec3 pos, float fov, float aspect,
 		horizontal_ang((float)M_PI), 
 		vertical_ang(0.0f),
 		speed(0.0f), 
-		mouse_speed(1.0f),
+		rotational_speed(10000.0f),
 		showreel(false)
       { }
 
@@ -37,7 +38,7 @@ void camera_t::apply(float dt)
 {
 	if (showreel) // pivot around a particular position i.e. "target"
 	{
-		static float	radius = 10.72f, 
+		static float	radius = 24.72f, 
 						height = 10.50f,
 						t = 0; 
 		
@@ -54,11 +55,17 @@ void camera_t::apply(float dt)
 	else // move around freely and unrestricted ...
 	{
 		calc_velocity(dt);
-		
-		glm::vec2 screen_center(window_width / 2.0f, window_height / 2.0f);
 
-		horizontal_ang += mouse_speed * dt * float(screen_center.x - cursor_posx);
-		vertical_ang += mouse_speed * dt * float(screen_center.y - cursor_posy);
+		static double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+
+		static glm::vec2 window_centre(window_width / 2.0, window_height / 2.0);
+
+		// Reset mouse position for next frame
+		glfwSetCursorPos(window, window_centre.x, window_centre.y);
+
+		horizontal_ang += rotational_speed * dt * (window_centre.x - xpos);
+		vertical_ang += rotational_speed * dt * (window_centre.y - ypos);
 
 		// compute a vector that represents, in world space, the direction in which
 		// we’re looking. spherical coordinates to cartesian coordinates conversion
@@ -67,9 +74,9 @@ void camera_t::apply(float dt)
 								cos(vertical_ang) * cos(horizontal_ang));
 
 		// right vector 
-		this->right = glm::vec3(sin(horizontal_ang - (float(M_PI) / 2.0f)),
+		this->right = glm::vec3(sin(horizontal_ang - ((float)(M_PI) / 2.0f)),
 								0,
-								cos(horizontal_ang - (float(M_PI) / 2.0f)));
+								cos(horizontal_ang - ((float)(M_PI) / 2.0f)));
 
 		// up vector : perpendicular to both direction and right
 		glm::vec3 up = glm::cross(this->right, this->dir);
@@ -92,7 +99,7 @@ void camera_t::calc_velocity(float dt)
 		user[INPUT::LEFT] ||
 		user[INPUT::RIGHT])
 	{
-		speed += dt * 10000.20f;
+		speed += dt * 1000.20f; // TODO: fix scaling issue
 		speed = glm::clamp(speed, 0.0f, 128.0f);
 	} 
 	else 

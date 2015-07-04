@@ -16,7 +16,7 @@ private:
 			// vertical angle : 0, look at the horizon
 			vertical_ang,
 			speed,
-			mouse_speed;
+			rotational_speed;
   
 	enum INPUT
 	{

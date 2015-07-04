@@ -6,15 +6,15 @@
 GLFWwindow* window = NULL;
 int window_width = (768);
 int window_height = (480);
-double cursor_posx(0.0);
-double cursor_posy(0.0);
+double cursor_posx(0);
+double cursor_posy(0);
 bool executing = false;
 
 ocean_t *ocean = NULL;
 camera_t* camera = NULL;
 
 const char* vsrc = ""
-"#version 150											\n"
+"#version 150 core										\n"
 "														\n"
 "uniform mat4 mvp;										\n"
 "uniform mat3 normal_matrix;							\n"
@@ -29,7 +29,7 @@ const char* vsrc = ""
 
 // fragment shader
 const char* fsrc = ""
-"#version 150											\n"
+"#version 150 core 										\n"
 "														\n"
 "uniform vec2 resolution;								\n"
 "														\n"
@@ -37,7 +37,7 @@ const char* fsrc = ""
 "														\n"
 "void main(void)										\n"
 "{														\n"
-"	color = vec4(0.0f, 1.0f, 1.0f, 1.0f);				\n"
+"	color = vec4(0.0f, 0.0f, 1.0f, 1.0f);				\n"
 "}														\n";
 
 GLuint shader_program;
@@ -80,6 +80,7 @@ static GLuint create_shader_program(const char* vs_text, const char* fs_text)
 	char info_log[8192];
 
 	vertex_shader = create_shader(GL_VERTEX_SHADER, vs_text);
+
 	if (vertex_shader != 0u)
 	{
 		fragment_shader = create_shader(GL_FRAGMENT_SHADER, fs_text);
@@ -138,9 +139,9 @@ bool init_simulation(void)
 
 	ocean = new ocean_t;
 
-	camera = new camera_t(	glm::vec3(0.0f, 0.0f, 0.0f), 
+	camera = new camera_t(	glm::vec3(0.0f, 2.0f, 0.0f), 
 							45.0f, 
-							float(window_height / window_width), 
+							(float)window_height / (float)window_width,
 							1.0f, 
 							1000.0f);
 
@@ -200,6 +201,7 @@ void run_simulation(void)
 		// clear respective buffers first before rendering
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// update shader uniforms and render ocean
 		glUseProgram(shader_program);
 		{
 			glm::mat4	model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0)), 
@@ -320,7 +322,7 @@ int main(int argc, char const *argv[])
 	glfwSetKeyCallback(window, key_callback);
 
 	// set a cursor position callback for "window".
-	glfwSetCursorPosCallback(window, cursor_position_callback);
+	//glfwSetCursorPosCallback(window, cursor_position_callback);
 
 	// retrieves the size, in pixels, of the framebuffer of 
 	// the specified window.
