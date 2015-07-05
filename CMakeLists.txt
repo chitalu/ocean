@@ -3,10 +3,11 @@ project(ocean)
 cmake_minimum_required(VERSION 2.8.12)
 
 if (UNIX)
-    add_definitions(-Wall)
+    SET (CMAKE_CXX_FLAGS "-std=c++11 -Werror")  
 endif()
 
 if (MSVC)
+    SET (CMAKE_CXX_FLAGS    "/WX /EHsc")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()  
 
