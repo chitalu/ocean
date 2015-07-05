@@ -64,8 +64,8 @@ void camera_t::apply(float dt)
 		// Reset mouse position for next frame
 		glfwSetCursorPos(window, window_centre.x, window_centre.y);
 
-		horizontal_ang += rotational_speed * dt * (window_centre.x - xpos);
-		vertical_ang += rotational_speed * dt * (window_centre.y - ypos);
+		horizontal_ang += rotational_speed * dt * (float)(window_centre.x - xpos);
+		vertical_ang += rotational_speed * dt * (float)(window_centre.y - ypos);
 
 		// compute a vector that represents, in world space, the direction in which
 		// we’re looking. spherical coordinates to cartesian coordinates conversion

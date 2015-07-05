@@ -129,12 +129,12 @@ void ocean_t::update(float dt)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, obj.vbo);
 	{
-		glm::vec3* ptr = (glm::vec3*)glMapBuffer(	GL_ARRAY_BUFFER,
-														GL_WRITE_ONLY);
+		glm::vec3* ptr = (glm::vec3*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 		assert(ptr != NULL && "failed to map vertex buffer");
+		{
+			// update ocean vertices...
 
-		// update ocean vertices...
-
+		}
 		GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
 		assert(result == GL_TRUE && "failed to unmap vertex buffer");
 		ptr = NULL;

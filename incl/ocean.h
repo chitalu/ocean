@@ -14,6 +14,7 @@ struct ocean_t
 	void render(void);
 };
 
+// initial definition in main.cpp
 extern ocean_t *ocean;
 
 #endif

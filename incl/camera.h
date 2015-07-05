@@ -81,6 +81,7 @@ public:
 	void process_input( int key, int scancode, int action, int mods);
 };
 
+// initial definition in main.cpp i.e. camera_t* camera = NULL
 extern camera_t* camera;
 
 #endif

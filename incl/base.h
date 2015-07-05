@@ -27,6 +27,11 @@
 
 #include <cmath>
 
+#include <string>
+
+#include "ocean.h"
+#include "camera.h"
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -44,7 +49,6 @@ extern double cursor_posy;
 // boolean indicator to signify whether the application 
 // is running
 extern bool executing;
-
 extern GLuint shader_program;
 
 #endif
